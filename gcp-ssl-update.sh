@@ -21,7 +21,7 @@ else
     gcloud compute ssl-certificates create $NAME --certificate=./live/$DOMAIN/fullchain.pem --private-key=./live/$DOMAIN/privkey.pem
 
     # Get the most recent certificate for this domain (should be the one we just created)
-    NEW_CERT=`gcloud compute ssl-certificates list --filter="name~'^$DOMAIN.*'" --limit 1 --sort-by ~creationTimestamp --format="value(name)"`
+    NEW_CERT=`gcloud compute ssl-certificates list --filter="name~'domain-.*'" --limit 1 --sort-by ~creationTimestamp --format="value(name)"`
 
     if [[ ! -z "$FRONT_END_NAME_IPV4" ]]; then
         echo 'Updating IPV4 forwarding leg'
