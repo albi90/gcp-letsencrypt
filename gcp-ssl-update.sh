@@ -26,7 +26,7 @@ else
     if [[ ! -z "$FRONT_END_NAME_IPV4" ]]; then
         echo 'Updating IPV4 forwarding leg'
 
-        PROXY_IPV4=`gcloud compute forwarding-rules list --filter="name~'$FRONT_END_NAME_IPV4'" --format="value(target.scope())"`
+        PROXY_IPV4=`gcloud compute forwarding-rules list --filter="name~'$FRONT_END_NAME_IPV4'" --format="value(target.scope())" --limit 1`
         if [[ -z "$PROXY_IPV4" ]]; then
             echo "No forwarding-rule found, associated with front-end name $FRONT_END_NAME_IPV4, did you spell it correctly?"
             exit 1
