@@ -41,7 +41,8 @@ else
         ALL_CERTS_IPV4=`join_by , $NEW_CERT $OTH_CERTS_IPV4`
 
         # Set the certificate list on the load-balancer
-        gcloud compute target-https-proxies update $PROXY_IPV4 --ssl-certificates=$ALL_CERTS_IPV4
+        # gcloud compute target-https-proxies update $PROXY_IPV4 --ssl-certificates=$ALL_CERTS_IPV4
+        gcloud compute target-https-proxies update $PROXY_IPV4 --ssl-certificates=$NEW_CERT
     fi
 
     if [[ ! -z "$FRONT_END_NAME_IPV6" ]]; then
