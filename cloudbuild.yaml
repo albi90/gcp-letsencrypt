@@ -10,6 +10,7 @@ steps:
   entrypoint: "./gcp-le-renew.sh"
   args: [
     "certonly",
+    "--dns-google-credentials", "${_SA_KEY_FILE}",
     "--agree-tos", "-m", "${_EMAIL}",
     "--non-interactive",
     "--dns-google",
