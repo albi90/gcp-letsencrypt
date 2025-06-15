@@ -9,7 +9,7 @@ DOMAIN=$1
 FRONT_END_NAME_IPV4=$2
 FRONT_END_NAME_IPV6=$3
 SERIAL=`openssl x509 -in ./live/$DOMAIN/cert.pem -serial -noout | awk -F= '{print tolower($2)}'`
-NAME=`echo domain-$SERIAL | sed 's/\./-/g'`
+NAME=`echo $DOMAIN-$SERIAL | sed 's/\./-/g'`
 
 # Join array by delimiter - see https://stackoverflow.com/a/17841619/2242975
 function join_by { local IFS="$1"; shift; echo "$*"; }
@@ -21,12 +21,12 @@ else
     gcloud compute ssl-certificates create $NAME --certificate=./live/$DOMAIN/fullchain.pem --private-key=./live/$DOMAIN/privkey.pem
 
     # Get the most recent certificate for this domain (should be the one we just created)
-    NEW_CERT=`gcloud compute ssl-certificates list --filter="name~'domain-.*'" --limit 1 --sort-by ~creationTimestamp --format="value(name)"`
+    NEW_CERT=`gcloud compute ssl-certificates list --filter="name~'^$DOMAIN.*'" --limit 1 --sort-by ~creationTimestamp --format="value(name)"`
 
     if [[ ! -z "$FRONT_END_NAME_IPV4" ]]; then
         echo 'Updating IPV4 forwarding leg'
 
-        PROXY_IPV4=`gcloud compute forwarding-rules list --filter="name~'$FRONT_END_NAME_IPV4'" --format="value(target.scope())" --limit 1`
+        PROXY_IPV4=`gcloud compute forwarding-rules list --filter="name~'$FRONT_END_NAME_IPV4'" --format="value(target.scope())"`
         if [[ -z "$PROXY_IPV4" ]]; then
             echo "No forwarding-rule found, associated with front-end name $FRONT_END_NAME_IPV4, did you spell it correctly?"
             exit 1
@@ -41,8 +41,7 @@ else
         ALL_CERTS_IPV4=`join_by , $NEW_CERT $OTH_CERTS_IPV4`
 
         # Set the certificate list on the load-balancer
-        # gcloud compute target-https-proxies update $PROXY_IPV4 --ssl-certificates=$ALL_CERTS_IPV4
-        gcloud compute target-https-proxies update $PROXY_IPV4 --ssl-certificates=$NEW_CERT
+        gcloud compute target-https-proxies update $PROXY_IPV4 --ssl-certificates=$ALL_CERTS_IPV4
     fi
 
     if [[ ! -z "$FRONT_END_NAME_IPV6" ]]; then
@@ -63,6 +62,6 @@ else
         ALL_CERTS_IPV6=`join_by , $NEW_CERT $OTH_CERTS_IPV6`
 
         # Set the certificate list on the load-balancer
-        gcloud compute target-https-proxies update $PROXY_IPV6 --ssl-certificates=$NEW_CERT
+        gcloud compute target-https-proxies update $PROXY_IPV6 --ssl-certificates=$ALL_CERTS_IPV6
     fi
 fi
